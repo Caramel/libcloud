@@ -555,6 +555,7 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
         after an initial authentication request.
         """
 
+        # TODO: check if token is expired here
         if not self.auth_token:
             aurl = self.auth_url
 
