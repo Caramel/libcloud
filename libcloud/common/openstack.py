@@ -549,14 +549,38 @@ class OpenStackBaseConnection(ConnectionUserAndKey):
     def request(self, **kwargs):
         return super(OpenStackBaseConnection, self).request(**kwargs)
 
+    def _is_token_valid(self):
+        """
+        Return True if the current taken is already cached and hasn't expired
+        yet.
+
+        @rtype: C{bool}
+        """
+        if not self.auth_token:
+            return False
+
+        if not self.auth_token_expires:
+            return False
+
+        expires = self.auth_token_expires - \
+                datetime.timedelta(seconds=AUTH_TOKEN_EXPIRES_GRACE_SECONDS)
+
+        time_tuple_expires = expires.utctimetuple()
+        time_tuple_now = datetime.datetime.utcnow().utctimetuple()
+
+        # TODO: Subtract some reasonable grace time period
+        if time_tuple_now < time_tuple_expires:
+            return True
+
+        return False
+
     def _populate_hosts_and_request_paths(self):
         """
         OpenStack uses a separate host for API calls which is only provided
         after an initial authentication request.
         """
 
-        # TODO: check if token is expired here
-        if not self.auth_token:
+        if not self._is_token_valid():
             aurl = self.auth_url
 
             if self._ex_force_auth_url is not None:
