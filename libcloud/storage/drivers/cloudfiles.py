@@ -773,8 +773,6 @@ class CloudFilesStorageDriver(StorageDriver, OpenStackDriverMixin):
         return name
 
     def _encode_object_name(self, name):
-        if isinstance(name, unicode):
-            name = name.encode('utf8')
         name = urlquote(name)
         return name
 
