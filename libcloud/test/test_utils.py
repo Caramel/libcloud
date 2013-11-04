@@ -209,10 +209,21 @@ class TestUtils(unittest.TestCase):
         iterator = StringIO(data)
         result = libcloud.utils.files.exhaust_iterator(iterator=iterator)
         self.assertEqual(result, b(data))
-        
+
     def test_unicode_urlquote(self):
+        # Regression tests for LIBCLOUD-429
+
+        # Note: this is a unicode literal
         uri = libcloud.utils.py3.urlquote('\xe9')
-        self.assertEqual(uri, '%C3%A9')
+        self.assertEqual(b(uri), b('%C3%A9'))
+
+        # Unicode without unicode characters
+        uri = libcloud.utils.py3.urlquote('~abc')
+        self.assertEqual(b(uri), b('%7Eabc'))
+
+        # Already-encoded bytestring without unicode characters
+        uri = libcloud.utils.py3.urlquote(b('~abc'))
+        self.assertEqual(b(uri), b('%7Eabc'))
 
 
 if __name__ == '__main__':
